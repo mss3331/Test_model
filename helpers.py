@@ -288,7 +288,7 @@ def get_variouse_datasets_loaders(train_dataset,train_dataset_not_augmented,vali
 
     return variouse_datasets_loader,phases
 
-def train_model_manual_augmentation(model, dataloaders, criterion, optimizer,num_classes,data_sizes_dict, augmentation_type,
+def train_model_manual_augmentation(model, dataloaders, criterion, optimizer,num_classes,model_file_name, data_sizes_dict, augmentation_type,
                                     orig_aug_ratio_dic, batch_size_dic,device,phases=['train', 'val'], num_epochs=25, is_inception=False):
     since = time.time()
     print(phases)
@@ -562,7 +562,7 @@ def splitIntoSubBatchs(inputs,labels,batch_size_dic):
     sub_batchs_dic = {"sub_inputs_list":sub_inputs_list,"sub_labels_list": sub_labels_list,
                       "averaging_factor_list":averaging_factor_list,"total_batch_images":total_batch_images}
     return sub_batchs_dic
-def getModel(model_name, num_classes, feature_extract, augmentation_type,dataset_num,create_new= False, use_pretrained=False):
+def getModel(model_name, num_classes, feature_extract, augmentation_type, model_files_name, dataset_num,create_new= False, use_pretrained=False):
     # to make sure that we have the same parameters across multiple Torch versions. Increase repreducability
     model, input_size = initialize_model(model_name, num_classes, feature_extract, use_pretrained=False)
     if create_new:
@@ -571,11 +571,12 @@ def getModel(model_name, num_classes, feature_extract, augmentation_type,dataset
         return model, input_size
     else:
         print("Loading model '{}' with output class {} CheckPoints {}. . .".format(model_name,
-                                                                                   num_classes,augmentation_type+"_"+
-                                                                                   model_name+"_Dataset"+str(dataset_num)+".pth"))
+                                                                                   num_classes,model_files_name))
 
-        checkpoint = torch.load("./Figures/CheckPoints/"+augmentation_type+"_"+ model_name+"_Dataset"+str(dataset_num)+".pth")
+        #checkpoint = torch.load("./Figures/CheckPoints/"+augmentation_type+"_"+ model_name+"_Dataset"+str(dataset_num)+".pth")
+        checkpoint = torch.load(model_files_name)
         print("Best epoch is {} and best validation acc is {}".format(checkpoint["best_epoch_num"], checkpoint["best_val_acc"]))
         model.load_state_dict(checkpoint["best_model_wts"])
-        return model, input_size
+        print(checkpoint.keys())
+        return model, checkpoint["best_optimizer_wts"], input_size
 

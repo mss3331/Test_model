@@ -11,10 +11,11 @@ import time
 import Data_Related_Methods
 import torchvision
 import random
+import glob
 from torchvision import datasets, models, transforms
 
 
-def runManualAugmentation(variouse_datasets_loader, augmentaionType, model, num_classes,batch_size_dic,
+def runManualAugmentation(variouse_datasets_loader, augmentaionType, model,optimizer_wts, num_classes,model_file_name, batch_size_dic,
                           orig_aug_ratio_dic, phases=['train', 'val']):
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -39,11 +40,14 @@ def runManualAugmentation(variouse_datasets_loader, augmentaionType, model, num_
         params_to_update = helpers.which_parameter_to_optimize(model_ft, feature_extract, False)
         # Observe that all parameters are being optimized
         optimizer_ft = optim.SGD(params_to_update, lr=0.001, momentum=0.9)
+        if(len(optimizer_wts) != 0):
+            print("Optimizers wieghts are used")
+            optimizer_ft.load_state_dict(optimizer_wts)
         # Setup the loss fxn
         criterion = nn.CrossEntropyLoss()
         # Train and evaluate
         results = helpers.train_model_manual_augmentation(model_ft, dataloaders_dict, criterion, optimizer_ft,
-                                      num_classes,
+                                      num_classes,model_file_name,
                                       batch_size_dic=batch_size_dic,
                                       augmentation_type=augmentaionType,
                                       orig_aug_ratio_dic=orig_aug_ratio_dic,
@@ -159,10 +163,17 @@ def ManualAugmentationExperiments(batch_size, model_name,orig_aug_ratio_dic,data
     augmentations = ["No_Augmentation Manual Augmentation", "Random Rotation [-180 +180] Resized",
                      "Random Contrast [0.5 2]", "Random Translate [0.3 0.3]"]
     #augmentations = ["Random Rotation [-180 +180] Resized", "No_Augmentation Manual Augmentation"]
-    augmentations = ["No_Augmentation Manual Augmentation"]
-    for augmentation_type in augmentations :
+    augmentation = "No_Augmentation Manual Augmentation"
+
+    # this list should have the names .pth files in CheckPoints
+    model_files_name = glob.glob('.\\Figures\\CheckPoints\\*.pth')
+    counter=0
+    for model_file_name in model_files_name :
+        if counter ==0:
+            counter+=1
+            continue
         # Initialize the model for this run for specific trained model in the model folder
-        model, input_size = helpers.getModel(model_name, num_classes, feature_extract, augmentation_type,dataset_num=dataset_num,
+        model,optimizer_wts ,input_size = helpers.getModel(model_name, num_classes, feature_extract, augmentation,model_file_name,dataset_num=dataset_num,
                                              create_new=False, use_pretrained=False)
 
         variouse_datasets_loader, phases = helpers.get_variouse_datasets_loaders(train_dataset_noAugmentation,
@@ -170,7 +181,7 @@ def ManualAugmentationExperiments(batch_size, model_name,orig_aug_ratio_dic,data
                                                                                  valid_test_dataset, samplers_dic_list,
                                                                                  batch_size=batch_size,
                                                                                  concatenate_dataset=concatenate_dataset)
-        runManualAugmentation(variouse_datasets_loader, augmentation_type, model, num_classes,
+        runManualAugmentation(variouse_datasets_loader, augmentation, model,optimizer_wts, num_classes,model_file_name,
                               batch_size_dic= batch_size_dic ,phases=phases,orig_aug_ratio_dic=orig_aug_ratio_dic)
         torch.manual_seed(0)
 
@@ -191,9 +202,9 @@ if __name__=="__main__":
     #Which dataset?
     dataset_num = 1
     # train set percintage
-    train_percentage = 0.025
+    train_percentage = 0.25
     # validation set percintage
-    val_percentage = 0.0125
+    val_percentage = 0.125
     # Number of classes in the dataset
     num_classes = 8
     # Flag for feature extracting. When False, we finetune the whole model,
