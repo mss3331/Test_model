@@ -54,7 +54,7 @@ def runManualAugmentation(variouse_datasets_loader, augmentaionType, model, num_
                                       phases=phases)
         (results, panda_training_validation_testing_results) = results
         # summary of the best validation\test accuarcy achieved across a specific dataset along with its co_occurence
-        best_val_accuracies.append((results['best_val_acc'].item()))
+        #best_val_accuracies.append((results['best_val_acc'].item()))
         best_epochs.append(results['best_epoch_num'])
         best_val_co_occurence.append(results['co_occurence_val'])
         best_val_prec_rec_fs_support.append(results['val_prec_rec_fs_support'])
@@ -114,7 +114,7 @@ def runManualAugmentation(variouse_datasets_loader, augmentaionType, model, num_
     best_accuracies_dic = {'best_val_accuracies': best_val_accuracies,
                            'corres_test_accuracies': corres_test_accuracies,
                            'Epoch_number': best_epochs}
-    Data_Related_Methods.save2text(best_accuracies_dic, title=parameters_used)
+    #Data_Related_Methods.save2text(best_accuracies_dic, title=parameters_used)
 
     best_co_occurences_dic = {'best_val_co_occurences': np.concatenate(best_val_co_occurence).squeeze(),
                               'corres_test_co_occurence': np.concatenate(corres_test_co_occurence).squeeze()}
@@ -156,7 +156,7 @@ def ManualAugmentationExperiments(batch_size, model_name,orig_aug_ratio_dic,data
     augmentations = ["No_Augmentation Manual Augmentation", "Random Rotation [-180 +180] Resized",
                      "Random Contrast [0.5 2]", "Random Translate [0.3 0.3]"]
     #augmentations = ["Random Rotation [-180 +180] Resized", "No_Augmentation Manual Augmentation"]
-
+    augmentations = ["No_Augmentation Manual Augmentation"]
     for augmentation_type in augmentations :
         # Initialize the model for this run for specific trained model in the model folder
         model, input_size = helpers.getModel(model_name, num_classes, feature_extract, augmentation_type,dataset_num=dataset_num,
@@ -188,9 +188,9 @@ if __name__=="__main__":
     #Which dataset?
     dataset_num = 1
     # train set percintage
-    train_percentage = 0.25
+    train_percentage = 0.025
     # validation set percintage
-    val_percentage = 0.125
+    val_percentage = 0.0125
     # Number of classes in the dataset
     num_classes = 8
     # Flag for feature extracting. When False, we finetune the whole model,
@@ -199,8 +199,8 @@ if __name__=="__main__":
     # Number of epochs to train for
     num_epochs = 1
     orig_aug_ratio_dic = {"original": 0, "augmentation": 1}
-    effective_batch_size = 10
-    target_batch_size = 20
+    effective_batch_size = 25
+    target_batch_size = 25
     assert (effective_batch_size <= target_batch_size)
 
     batch_size_dic = {"effective_batch_size": effective_batch_size, "target_batch_size": target_batch_size}

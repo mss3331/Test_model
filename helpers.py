@@ -176,10 +176,11 @@ def load_dataset_general(train_dataset,train_dataset_not_augmented, valid_test_d
     size_valid = len(sampler_dic['valid_sampler'])
     print('valid images:', size_valid)
 
+    # this code needed to be modified
     dataloaders_dict['train'] = train_loader
     dataloaders_dict['val'] = valid_loader
-    dataSize_dict['train'] = size_training
-    dataSize_dict['val'] = size_valid
+    dataSize_dict['val'] = size_training
+    #dataSize_dict['val'] = size_valid
 
     counter = 1
     for key in sampler_dic:
@@ -256,14 +257,14 @@ def getSampler(num_train, train_percentage, shuffle, dataset_num, val_percentage
     # test sets would have the same size as the validation set
     start_index =split_train_val+split_val_testing
     counter = 1
-    for i in range(un_used_images//split_val_testing):
-        if counter>number_of_test_sets:
-            break
-        test_idx = indices[start_index:start_index+split_val_testing]
-        start_index += split_val_testing
-        all_samplers_dic['test_sampler_'+str(i+1)]=SubsetSampler(test_idx)
-        counter +=1
-
+    # for i in range(un_used_images//split_val_testing):
+    #     if counter>number_of_test_sets:
+    #         break
+    #     test_idx = indices[start_index:start_index+split_val_testing]
+    #     start_index += split_val_testing
+    #     all_samplers_dic['test_sampler_'+str(i+1)]=SubsetSampler(test_idx)
+    #     counter +=1
+    all_samplers_dic['test_sampler_1'] = SubsetSampler(train_sampler)
 
     return all_samplers_dic
 def addAugmentationIndecies(indecies,datasetSize):#if we want to append the correct indecies to the current one we need to know the new indice in the concatenated dataset
@@ -299,7 +300,7 @@ def train_model_manual_augmentation(model, dataloaders, criterion, optimizer,num
     train_loss_history = []
     panda_training_validation_testing_results={} # this variable will contains accuracy\losse for each phase in order to replot the experiment
     predictions_labels_panda_dic = {} # this variable will save the model predictions and the corresponding labels for analysis later
-
+    predictions_labels_panda_dic_val = {} # this one for validation since it contains different size than train and test
     best_model_wts = copy.deepcopy(model.state_dict())
 
     best_val_acc = 0.0
@@ -327,8 +328,9 @@ def train_model_manual_augmentation(model, dataloaders, criterion, optimizer,num
                     panda_training_validation_testing_results[(phase + '_loss')] = [-1]
                     panda_training_validation_testing_results[(phase + '_accuracy')] = [-1]
                 continue
+                # The goal is to test the performance of the model, so in both cases it will be in the eval mode
             if phase == 'train':
-                model.train()  # Set model to training mode
+                model.eval()  # Set model to evaluate mode
             else:
                 model.eval()   # Set model to evaluate mode
 
@@ -372,12 +374,12 @@ def train_model_manual_augmentation(model, dataloaders, criterion, optimizer,num
 
                     # forward
                     # track history if only in train
-                    with torch.set_grad_enabled(phase == 'train'):
+                    with torch.set_grad_enabled(False):#don't track history even in training
                         # Get model outputs and calculate loss
                         # Special case for inception because in training it has an auxiliary output. In train
                         #   mode we calculate the loss by summing the final output and the auxiliary output
                         #   but in testing we only consider the final output.
-                        if is_inception and phase == 'train':
+                        if is_inception and phase == '':
                             # From https://discuss.pytorch.org/t/how-to-optimize-inception-model-with-auxiliary-classifiers/7958
                             outputs, aux_outputs = model(inputs)
                             loss1 = criterion(outputs, labels)
@@ -389,7 +391,7 @@ def train_model_manual_augmentation(model, dataloaders, criterion, optimizer,num
                         #the predicted labels
                         _, preds = torch.max(outputs, 1)
                         # backward + optimize only if in training phase
-                        if phase == 'train':
+                        if phase == '':
                             loss.backward()
 
                     # statistics for each sub_batch
@@ -398,7 +400,7 @@ def train_model_manual_augmentation(model, dataloaders, criterion, optimizer,num
                     all_predections = np.concatenate((all_predections, preds.cpu().data))
                     if phase != 'train':#fill the co_occurence only for val and test
                         co_occurence=Data_Related_Methods.fill_co_occurence(pred=preds.cpu().numpy(),label=labels.cpu().numpy(), co_occurence=co_occurence)
-                if phase == 'train':
+                if phase == '':
                     optimizer.step()
 
 
@@ -417,7 +419,7 @@ def train_model_manual_augmentation(model, dataloaders, criterion, optimizer,num
 
             targeted_val_accuracy = 0.7  # this will control the frequency in which we test our model to test2 test3 ...etc
             # deep copy the model
-            if phase == 'val' and epoch_acc > best_val_acc:
+            if phase == '' and epoch_acc > best_val_acc:
                 best_val_acc = epoch_acc
                 best_epoch_num = epoch
                 co_occurence_val = co_occurence
@@ -432,7 +434,7 @@ def train_model_manual_augmentation(model, dataloaders, criterion, optimizer,num
             elif phase == 'val':
                 skip_testSets_flag = True
 
-            if phase == 'test1' and best_epoch_num == epoch:
+            if phase == 'test1':
                 best_test_acc = epoch_acc
                 co_occurence_test = co_occurence
                 test_prec_rec_fs_support = sk.precision_recall_fscore_support(all_labels, all_predections, average='macro')
@@ -442,10 +444,12 @@ def train_model_manual_augmentation(model, dataloaders, criterion, optimizer,num
                 result_panda_dic[phase+'_accuracy'] = epoch_acc.item()
                 result_panda_dic[phase+'_prec_rec_fs_support'] = str(sk.precision_recall_fscore_support(all_labels, all_predections, average='macro')[:-1])
 
-            if phase != 'train' and best_epoch_num == epoch:#for val\test1\test2 .... save the model predictions and labels in order to analyze them later
+            if phase != 'val':#for val\test1\test2 .... save the model predictions and labels in order to analyze them later
                 predictions_labels_panda_dic[phase + '_predictions'] = all_predections
                 predictions_labels_panda_dic[phase + '_labels'] = all_labels
-
+            else:
+                predictions_labels_panda_dic_val[phase + '_predictions'] = all_predections
+                predictions_labels_panda_dic_val[phase + '_labels'] = all_labels
 
             if phase == 'train':
                 train_acc_history.append(epoch_acc)
@@ -480,7 +484,7 @@ def train_model_manual_augmentation(model, dataloaders, criterion, optimizer,num
               'result_panda_dic':result_panda_dic,
               'predictions_labels_panda_dic':predictions_labels_panda_dic,
               'best_model_wts':best_model_wts,
-              'best_optimizer_wts':best_optimizer_wts}
+              'best_optimizer_wts':[]}
 
     return result,panda_training_validation_testing_results
 def augment(pilo_imgs, augmentation_type,magnitude_factors,magnitude_factors_index):
