@@ -67,6 +67,8 @@ def runManualAugmentation(variouse_datasets_loader, augmentaionType, model, num_
             './Figures/PandaResults/PandaAllResults_' + augmentaionType + '_Dataset' + str(exp_num) + '.csv')
         pandas.DataFrame(results['predictions_labels_panda_dic']).to_excel(
             './Figures/Predictions/Predictions_' + augmentaionType + '_Dataset' + str(exp_num) + '.xlsx')
+        pandas.DataFrame(results['predictions_labels_panda_dic_val']).to_excel(
+            './Figures/Predictions/Predictions_' + augmentaionType + '_DatasetVal' + str(exp_num) + '.xlsx')
         panda_results['Dataset' + str(exp_num)] = results['result_panda_dic']
         parameters_used = "Pretrained_False_Augmentation" + str(augmentaionType) + str(exp_num) \
                           + "_bestEpochParameters" + model_name + \
@@ -95,13 +97,14 @@ def runManualAugmentation(variouse_datasets_loader, augmentaionType, model, num_
         #              phase="train",
         #              show=False, save=True)
         print('********************** Finish ' + augmentaionType + ' :' + str(exp_num))
+        # No need to save the model parameters
         # check point where created incase I want to use transfer learning
-        torch.save({
-            'best_epoch_num': results['best_epoch_num'],
-            'best_model_wts': results['best_model_wts'],
-            'best_optimizer_wts': results['best_optimizer_wts'],
-            'best_val_acc': results['best_val_acc']},
-            './Figures/CheckPoints/' + augmentaionType + '_' + model_name + '_Dataset' + str(exp_num) + '.pth')
+        # torch.save({
+        #     'best_epoch_num': results['best_epoch_num'],
+        #     'best_model_wts': results['best_model_wts'],
+        #     'best_optimizer_wts': results['best_optimizer_wts'],
+        #     'best_val_acc': results['best_val_acc']},
+        #     './Figures/CheckPoints/' + augmentaionType + '_' + model_name + '_Dataset' + str(exp_num) + '.pth')
 
     # plt.clf()
     print('Best Validation Accuracies across all Datasets = ', (best_val_accuracies, best_epochs))

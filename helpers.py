@@ -362,7 +362,7 @@ def train_model_manual_augmentation(model, dataloaders, criterion, optimizer,num
                     sub_batch_inputs = sub_batchs_images[sub_batch_index]
                     sub_batch_labels = sub_batchs_labels[sub_batch_index]
                     # show the orig and aug images if 1:1 is applied or show the first and second batch images otherwise
-                    # if phase == "train" and sub_batch<=1:
+                    # if (phase == "train" or phase == "test1") and sub_batch<=1:
                     #     Data_Related_Methods.imshow(sub_batch_inputs, num_images=2)
                     #     sub_batch+=1
 
@@ -423,8 +423,8 @@ def train_model_manual_augmentation(model, dataloaders, criterion, optimizer,num
                 best_val_acc = epoch_acc
                 best_epoch_num = epoch
                 co_occurence_val = co_occurence
-                best_model_wts = copy.deepcopy(model.state_dict())
-                best_optimizer_wts = copy.deepcopy(optimizer.state_dict())
+                # best_model_wts = copy.deepcopy(model.state_dict())
+                # best_optimizer_wts = copy.deepcopy(optimizer.state_dict())
                 val_prec_rec_fs_support = sk.precision_recall_fscore_support(all_labels, all_predections,average='macro')
                 if best_val_acc>=targeted_val_accuracy:
                     skip_testSets_flag = False # we can put here extra if condition to check if we reached 75% validation accuracy
@@ -483,7 +483,8 @@ def train_model_manual_augmentation(model, dataloaders, criterion, optimizer,num
               'best_val_acc': best_val_acc,'best_test_acc':best_test_acc,'best_epoch_num': best_epoch_num,
               'result_panda_dic':result_panda_dic,
               'predictions_labels_panda_dic':predictions_labels_panda_dic,
-              'best_model_wts':best_model_wts,
+              'predictions_labels_panda_dic_val':predictions_labels_panda_dic_val,
+              'best_model_wts':[],
               'best_optimizer_wts':[]}
 
     return result,panda_training_validation_testing_results
