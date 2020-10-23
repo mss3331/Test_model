@@ -577,6 +577,6 @@ def getModel(model_name, num_classes, feature_extract, augmentation_type, model_
         checkpoint = torch.load(model_files_name)
         print("Best epoch is {} and best validation acc is {}".format(checkpoint["best_epoch_num"], checkpoint["best_val_acc"]))
         model.load_state_dict(checkpoint["best_model_wts"])
-        print(checkpoint.keys())
+
         return model, checkpoint["best_optimizer_wts"], input_size
 

@@ -20,7 +20,6 @@ def runManualAugmentation(variouse_datasets_loader, augmentaionType, model,optim
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print('training will be in the "' + str(device) + '"')
-
     best_val_accuracies = []
     best_epochs = []
     corres_test_accuracies = []  # Accuracy taken at an epoch number correspond to highest val acuracy.
@@ -40,9 +39,9 @@ def runManualAugmentation(variouse_datasets_loader, augmentaionType, model,optim
         params_to_update = helpers.which_parameter_to_optimize(model_ft, feature_extract, False)
         # Observe that all parameters are being optimized
         optimizer_ft = optim.SGD(params_to_update, lr=0.001, momentum=0.9)
-        if(len(optimizer_wts) != 0):
-            print("Optimizers wieghts are used")
-            optimizer_ft.load_state_dict(optimizer_wts)
+        # if(len(optimizer_wts) != 0):
+        #     print("Optimizers wieghts are used")
+        #     optimizer_ft.load_state_dict(optimizer_wts)
         # Setup the loss fxn
         criterion = nn.CrossEntropyLoss()
         # Train and evaluate
@@ -66,15 +65,14 @@ def runManualAugmentation(variouse_datasets_loader, augmentaionType, model,optim
         corres_test_co_occurence.append(results['co_occurence_test'])
         corres_test_prec_rec_fs_support.append(results['test_prec_rec_fs_support'])
 
+        file_name_pth = model_file_name.split('\\')[-1].split('.pth')[0] # an e.g. of the expected string is Random Contrast [0.5 1.5]
         # save panda results
-        pandas.DataFrame(panda_training_validation_testing_results).to_csv(
-            './Figures/PandaResults/PandaAllResults_' + augmentaionType + '_Dataset' + str(exp_num) + '.csv')
-        pandas.DataFrame(results['predictions_labels_panda_dic']).to_excel(
-            './Figures/Predictions/Predictions_' + augmentaionType + '_Dataset' + str(exp_num) + '.xlsx')
-        pandas.DataFrame(results['predictions_labels_panda_dic_val']).to_excel(
-            './Figures/Predictions/Predictions_' + augmentaionType + '_DatasetVal' + str(exp_num) + '.xlsx')
+        pandas.DataFrame(panda_training_validation_testing_results).to_csv('./Figures/PandaResults/PandaAllResults_' +file_name_pth + '.csv')
+        pandas.DataFrame(results['predictions_labels_panda_dic']).to_excel('./Figures/Predictions/Predictions_' + file_name_pth+ '.xlsx')
+        pandas.DataFrame(results['predictions_labels_panda_dic_val']).to_excel('./Figures/Predictions/Predictions_' + file_name_pth + '.xlsx')
         panda_results['Dataset' + str(exp_num)] = results['result_panda_dic']
-        parameters_used = "Pretrained_False_Augmentation" + str(augmentaionType) + str(exp_num) \
+
+        parameters_used = "Pretrained_False_Augmentation" + file_name_pth \
                           + "_bestEpochParameters" + model_name + \
                           "_epochs" + str(num_epochs) + "_featureExtraction" + str(feature_extract)
 
@@ -100,7 +98,7 @@ def runManualAugmentation(variouse_datasets_loader, augmentaionType, model,optim
         #              num_epochs=num_epochs,
         #              phase="train",
         #              show=False, save=True)
-        print('********************** Finish ' + augmentaionType + ' :' + str(exp_num))
+        print('********************** Finish ' + model_file_name + ' :' + str(exp_num))
         # No need to save the model parameters
         # check point where created incase I want to use transfer learning
         # torch.save({
@@ -113,7 +111,7 @@ def runManualAugmentation(variouse_datasets_loader, augmentaionType, model,optim
     # plt.clf()
     print('Best Validation Accuracies across all Datasets = ', (best_val_accuracies, best_epochs))
     print('The corresponding Test acuracies = ', corres_test_accuracies)
-    pandas.DataFrame(panda_results).T.to_excel('./Figures/' + augmentaionType + '_panda..xlsx')
+    pandas.DataFrame(panda_results).T.to_excel('./Figures/' + file_name_pth + '_panda..xlsx')
     # print('Best Validation Co_occurence matrix:\n',best_val_co_occurence)
     # print('The corresponding Test Co_occurence matrix:\n',corres_test_co_occurence)
 
