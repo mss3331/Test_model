@@ -165,11 +165,9 @@ def ManualAugmentationExperiments(batch_size, model_name,orig_aug_ratio_dic,data
 
     # this list should have the names .pth files in CheckPoints
     model_files_name = glob.glob('.\\Figures\\CheckPoints\\*.pth')
-    counter=0
+
     for model_file_name in model_files_name :
-        if counter ==0:
-            counter+=1
-            continue
+
         # Initialize the model for this run for specific trained model in the model folder
         model,optimizer_wts ,input_size = helpers.getModel(model_name, num_classes, feature_extract, augmentation,model_file_name,dataset_num=dataset_num,
                                              create_new=False, use_pretrained=False)
