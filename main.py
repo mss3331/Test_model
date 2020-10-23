@@ -65,7 +65,7 @@ def runManualAugmentation(variouse_datasets_loader, augmentaionType, model,optim
         corres_test_co_occurence.append(results['co_occurence_test'])
         corres_test_prec_rec_fs_support.append(results['test_prec_rec_fs_support'])
 
-        file_name_pth = model_file_name.split('\\')[-1].split('.pth')[0] # an e.g. of the expected string is Random Contrast [0.5 1.5]
+        file_name_pth = model_file_name.split('/')[-1].split('.pth')[0] # an e.g. of the expected string is Random Contrast [0.5 1.5]
         # save panda results
         pandas.DataFrame(panda_training_validation_testing_results).to_csv('./Figures/PandaResults/PandaAllResults_' +file_name_pth + '.csv')
         pandas.DataFrame(results['predictions_labels_panda_dic']).to_excel('./Figures/Predictions/Predictions_' + file_name_pth+ '.xlsx')
@@ -133,8 +133,8 @@ def runManualAugmentation(variouse_datasets_loader, augmentaionType, model,optim
 def ManualAugmentationExperiments(batch_size, model_name,orig_aug_ratio_dic,dataset_num):
     print("Manual Augmentation is running ....")
     #data_dir = "C:/Users/Mahmood_Haithami/Downloads/JDownloader/Databases/KvasirV1_WithBlackBox_HE_0.3GB" # Windows
-    data_dir = "C:/Users/Mahmood_Haithami/Downloads/JDownloader/Databases/KvasirV1_Unified" # Windows
-    #data_dir = "~/Documents/Mahmood/Databases/KvasirV1_Unified"
+    #data_dir = "C:/Users/Mahmood_Haithami/Downloads/JDownloader/Databases/KvasirV1_Unified" # Windows
+    data_dir = "~/Documents/Mahmood/Databases/KvasirV1_Unified"
 
     #determine the input size for each model
     if(model_name == "inception"):
@@ -164,7 +164,7 @@ def ManualAugmentationExperiments(batch_size, model_name,orig_aug_ratio_dic,data
     augmentation = "No_Augmentation Manual Augmentation"
 
     # this list should have the names .pth files in CheckPoints
-    model_files_name = glob.glob('.\\Figures\\CheckPoints\\*.pth')
+    model_files_name = glob.glob('./Figures/CheckPoints/*.pth')
 
     for model_file_name in model_files_name :
 
