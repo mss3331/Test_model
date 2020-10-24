@@ -69,7 +69,7 @@ def runManualAugmentation(variouse_datasets_loader, augmentaionType, model,optim
         # save panda results
         pandas.DataFrame(panda_training_validation_testing_results).to_csv('./Figures/PandaResults/PandaAllResults_' +file_name_pth + '.csv')
         pandas.DataFrame(results['predictions_labels_panda_dic']).to_excel('./Figures/Predictions/Predictions_' + file_name_pth+ '.xlsx')
-        pandas.DataFrame(results['predictions_labels_panda_dic_val']).to_excel('./Figures/Predictions/Predictions_' + file_name_pth + '.xlsx')
+        pandas.DataFrame(results['predictions_labels_panda_dic_val']).to_excel('./Figures/Predictions/Predictions_val_' + file_name_pth + '.xlsx')
         panda_results['Dataset' + str(exp_num)] = results['result_panda_dic']
 
         parameters_used = "Pretrained_False_Augmentation" + file_name_pth \

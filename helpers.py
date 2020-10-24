@@ -444,10 +444,10 @@ def train_model_manual_augmentation(model, dataloaders, criterion, optimizer,num
                 result_panda_dic[phase+'_accuracy'] = epoch_acc.item()
                 result_panda_dic[phase+'_prec_rec_fs_support'] = str(sk.precision_recall_fscore_support(all_labels, all_predections, average='macro')[:-1])
 
-            if phase != 'val':#for val\test1\test2 .... save the model predictions and labels in order to analyze them later
+            if phase == 'test1':#for val\test1\test2 .... save the model predictions and labels in order to analyze them later
                 predictions_labels_panda_dic[phase + '_predictions'] = all_predections
                 predictions_labels_panda_dic[phase + '_labels'] = all_labels
-            else:
+            elif phase =='val':
                 predictions_labels_panda_dic_val[phase + '_predictions'] = all_predections
                 predictions_labels_panda_dic_val[phase + '_labels'] = all_labels
 
